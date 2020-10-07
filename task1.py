@@ -8,11 +8,22 @@ xTestPath = Path('X_test.csv')
 
 def main():
     x_train, y_train, x_test = dataframes()
-
+    
+    nanInfo(x_train, 'x_train')
+    nanInfo(y_train, 'y_train')
+    
+    # NaN's are evenly distributed
     # impute missing data?
+
+
+def nanInfo(df, name):
+    print("number of NaN's for each column in %s:\n%s\n\n" % (name, df.isnull().sum(axis = 0)))
     
-    # add more features for non-linear relationships?
-    
+    df_size = df.size
+    df_nan_size = df.isnull().sum().sum()
+    if df_nan_size != 0:
+        nan_percentage = df_size/df_nan_size
+        print('percentage of missing data in %s:\t%s\n\n' % (name, int(nan_percentage)/100))
 
 def dataframes():
     assert xTrainPath.exists() or yTrainPath.exists() or xTestPath.exists(), 'Wrong path.'
