@@ -17,7 +17,6 @@ def main():
     
     x_train = impute(x_train)
     x_test = impute(x_test)
-    y_train.index = y_train.index.astype(int)
     
     nanInfo(x_train, 'x_train')
     nanInfo(x_test, 'x_test')
@@ -51,6 +50,11 @@ def dataframes():
     x_train = pd.read_csv(xTrainPath, index_col=0)
     y_train = pd.read_csv(yTrainPath, index_col=0)
     x_test = pd.read_csv(xTestPath, index_col=0)
+    
+    x_train.index = x_train.index.astype(int)
+    y_train.index = y_train.index.astype(int)
+    x_test.index = x_test.index.astype(int)
+    
     return x_train, y_train, x_test
 
 if __name__ == "__main__":
