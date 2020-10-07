@@ -1,21 +1,37 @@
 import numpy as np
 import pandas as pd
+
+from sklearn.impute import SimpleImputer
 from pathlib import Path
 
 xTrainPath = Path('X_train.csv')
 yTrainPath = Path('y_train.csv')
 xTestPath = Path('X_test.csv')
 
-
 def main():
     x_train, y_train, x_test = dataframes()
     
+    # NaN's are evenly distributed
+#    nanInfo(x_train, 'x_train')
+#    nanInfo(x_test, 'x_test')
+    
+    x_train = impute(x_train)
+    x_test = impute(x_test)
+    y_train.index = y_train.index.astype(int)
+    
     nanInfo(x_train, 'x_train')
-    nanInfo(y_train, 'y_train')
     nanInfo(x_test, 'x_test')
     
-    # NaN's are evenly distributed
-    # impute missing data?
+    print(x_train)
+    print(y_train)
+    print(x_test)
+
+
+def impute(df):
+    imputer = SimpleImputer(strategy='mean')	
+    imputed = imputer.fit_transform(df)
+    imputed_df = pd.DataFrame(data=imputed)
+    return imputed_df
 
 
 def nanInfo(df, name):
