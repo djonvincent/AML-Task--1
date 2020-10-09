@@ -16,8 +16,11 @@ x_train = x_train[x_train_outliers==1]
 y_train = y_train[x_train_outliers==1]
 x_train = scale(x_train)
 
+sum_ = 0
 for train_idx, test_idx in kf.split(x_train):
     reg = LinearRegression()
     reg.fit(x_train[train_idx], y_train[train_idx])
     y_pred = reg.predict(x_train[test_idx])
+    sum_ += r2_score(y_train[test_idx], y_pred)
     print(r2_score(y_train[test_idx], y_pred))
+print('average: %s' % str(sum_/10))

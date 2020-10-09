@@ -12,18 +12,13 @@ def main():
     x_train, y_train, x_test = dataframes()
     
     # NaN's are evenly distributed
-    #nanInfo(x_train, 'x_train')
-    #nanInfo(x_test, 'x_test')
+#    nanInfo(x_train, 'x_train')
+#    nanInfo(x_test, 'x_test')
     
     x_train = impute(x_train)
     x_test = impute(x_test)
     
-    #nanInfo(x_train, 'x_train')
-    #nanInfo(x_test, 'x_test')
-    
-    print(x_train)
-    print(y_train)
-    print(x_test)
+
 
 
 def impute(df):
