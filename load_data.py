@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from sklearn.impute import SimpleImputer
+from sklearn.impute import SimpleImputer, KNNImputer()
 from pathlib import Path
 
 xTrainPath = Path('data', 'X_train.csv')
@@ -17,12 +17,11 @@ def main():
     
     x_train = impute(x_train)
     x_test = impute(x_test)
-    
-
 
 
 def impute(df):
-    imputer = SimpleImputer(strategy='mean')	
+#    imputer = SimpleImputer(strategy='mean')
+    imputer = KNNImputer()
     imputed = imputer.fit_transform(df)
     imputed_df = pd.DataFrame(data=imputed)
     return imputed_df
