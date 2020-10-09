@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from sklearn.impute import SimpleImputer, KNNImputer
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import SimpleImputer, KNNImputer, IterativeImputer
 from pathlib import Path
 
 xTrainPath = Path('data', 'X_train.csv')
@@ -22,6 +23,7 @@ def main():
 def impute(df):
 #    imputer = SimpleImputer(strategy='mean')
     imputer = KNNImputer()
+#    imputer = IterativeImputer(n_nearest_features=100, verbose=5, tol=1e-5)
     imputed = imputer.fit_transform(df)
     imputed_df = pd.DataFrame(data=imputed)
     return imputed_df
