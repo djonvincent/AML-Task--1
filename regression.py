@@ -6,7 +6,7 @@ from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.metrics import r2_score
 from load_data import dataframes, impute
 from outlier_detection import detect_outliers
-n_splits=20
+n_splits=3
 
 x_train, y_train, x_test = dataframes()
 x_train = x_train.values
