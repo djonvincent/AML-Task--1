@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from sklearn.impute import SimpleImputer, KNNImputer()
+from sklearn.impute import SimpleImputer, KNNImputer
 from pathlib import Path
 
 xTrainPath = Path('data', 'X_train.csv')
