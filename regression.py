@@ -16,19 +16,25 @@ parser = ArgumentParser()
 parser.add_argument('--test', dest='test', action='store_true', default=False)
 args = parser.parse_args()
 
+#DATAFRAME
 x_train, y_train, x_test = dataframes()
 x_train = x_train.values
 x_test = x_test.values
 y_train = y_train.values.reshape(-1)
+
+#IMPUTE
 x_train = impute(x_train)
-x_train_outliers = detect_outliers(x_train)
-x_train = x_train[x_train_outliers==1]
-y_train = y_train[x_train_outliers==1]
+
+#OUTLIER DETECTION
+x_train, y_train = detect_outliers(x_train, y_train)
+
+#FEATURE SELECTION
 scaler = StandardScaler().fit(x_train)
 x_train = scaler.transform(x_train)
 k_best = SelectKBest(f_classif, k=50).fit(x_train, y_train)
 x_train = k_best.transform(x_train)
 
+#CROSS-VALIDATION
 if args.test:
     x_test = impute(x_test)
     x_test = scaler.transform(x_test)
