@@ -7,8 +7,9 @@ from sklearn.svm import SVR
 from sklearn.model_selection import KFold
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.metrics import mean_absolute_error, r2_score
-from load_data import dataframes, impute
-from outlier_detection import detect_outliers
+from load_data import dataframes
+from imputation import impute
+from outlier_detection import isolation_forest, local_outlier
 
 n_splits=3
 
@@ -23,20 +24,23 @@ x_test = x_test.values
 y_train = y_train.values.reshape(-1)
 
 #IMPUTE
-x_train = impute(x_train)
+x_train = impute(x_train, 'knn')
 
 #OUTLIER DETECTION
-x_train, y_train = detect_outliers(x_train, y_train)
+#x_train, y_train = isolation_forest(x_train, y_train)
+x_train, y_train = local_outlier(x_train, y_train, neighbors=30)
 
-#FEATURE SELECTION
+#SCALING
 scaler = StandardScaler().fit(x_train)
 x_train = scaler.transform(x_train)
-k_best = SelectKBest(f_classif, k=50).fit(x_train, y_train)
+
+#FEATURE SELECTION
+k_best = SelectKBest(f_classif, k=100).fit(x_train, y_train)
 x_train = k_best.transform(x_train)
 
 #CROSS-VALIDATION
 if args.test:
-    x_test = impute(x_test)
+    x_test = impute(x_test, 'knn')
     x_test = scaler.transform(x_test)
     x_test = k_best.transform(x_test)
     reg = SVR(kernel='rbf', C=10.0)
