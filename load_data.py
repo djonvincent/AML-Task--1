@@ -5,29 +5,6 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, KNNImputer, IterativeImputer
 from pathlib import Path
 
-xTrainPath = Path('data', 'X_train.csv')
-yTrainPath = Path('data', 'y_train.csv')
-xTestPath = Path('data', 'X_test.csv')
-
-def main():
-    x_train, y_train, x_test = dataframes()
-    
-    # NaN's are evenly distributed
-#    nanInfo(x_train, 'x_train')
-#    nanInfo(x_test, 'x_test')
-    
-    x_train = impute(x_train)
-    x_test = impute(x_test)
-
-
-def impute(df):
-#    imputer = SimpleImputer(strategy='mean')
-    imputer = KNNImputer()
-#    imputer = IterativeImputer(n_nearest_features=100, verbose=5, tol=1e-5)
-    imputed = imputer.fit_transform(df)
-    imputed_df = pd.DataFrame(data=imputed)
-    return imputed_df
-
 
 def nanInfo(df, name):
     print("number of NaN's for each column in %s:\n%s\n" % (name, df.isnull().sum(axis = 0)))
@@ -41,6 +18,10 @@ def nanInfo(df, name):
 
 
 def dataframes():
+    xTrainPath = Path('data', 'X_train.csv')
+    yTrainPath = Path('data', 'y_train.csv')
+    xTestPath = Path('data', 'X_test.csv')
+    
     assert xTrainPath.exists() and yTrainPath.exists() and xTestPath.exists(), 'Wrong path.'
     
     x_train = pd.read_csv(xTrainPath, index_col=0)
