@@ -15,6 +15,9 @@ n_splits=3
 
 parser = ArgumentParser()
 parser.add_argument('--test', dest='test', action='store_true', default=False)
+parser.add_argument('--finetune', dest='finetune', action='store_true', default=False)
+parser.add_argument('--k', type=int, default=100)
+parser.add_argument('--knn', type=int, default=30)
 args = parser.parse_args()
 
 #DATAFRAME
@@ -23,26 +26,42 @@ x_train = x_train.values
 x_test = x_test.values
 y_train = y_train.values.reshape(-1)
 
-#IMPUTE
-x_train = impute(x_train, 'knn')
+def preprocess(x_raw, y_raw, x_test_raw, k_features, lo_neighbors):
+    #IMPUTE
+    x = impute(x_raw, 'knn')
+    x_test = impute(x_test_raw, 'knn')
 
-#OUTLIER DETECTION
-#x_train, y_train = isolation_forest(x_train, y_train)
-x_train, y_train = local_outlier(x_train, y_train, neighbors=30)
+    #OUTLIER DETECTION
+    #x_train, y_train = isolation_forest(x_train, y_train)
+    x, y = local_outlier(x, y_raw, neighbors=lo_neighbors)
 
-#SCALING
-scaler = StandardScaler().fit(x_train)
-x_train = scaler.transform(x_train)
+    #SCALING
+    scaler = StandardScaler().fit(x)
+    x = scaler.transform(x)
+    x_test = scaler.transform(x_test)
 
-#FEATURE SELECTION
-k_best = SelectKBest(f_classif, k=100).fit(x_train, y_train)
-x_train = k_best.transform(x_train)
+    #FEATURE SELECTION
+    k_best = SelectKBest(f_classif, k=k_features).fit(x, y)
+    x = k_best.transform(x)
+    x_test = k_best.transform(x_test)
+
+    return x, y, x_test
+
+def CV_score(x, y, model, lo_neighbors, k_features, n_splits=3):
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+    total_score = 0
+    for train_idx, test_idx in kf.split(x):
+        x_train_kf, y_train_kf, x_test_kf = preprocess(
+            x[train_idx], y[train_idx], x[test_idx], lo_neighbors, k_features
+        )
+        model.fit(x_train_kf, y_train_kf)
+        y_pred = model.predict(x_test_kf)
+        total_score += r2_score(y[test_idx], y_pred)
+    return total_score/n_splits;
 
 #CROSS-VALIDATION
 if args.test:
-    x_test = impute(x_test, 'knn')
-    x_test = scaler.transform(x_test)
-    x_test = k_best.transform(x_test)
+    x_train, y_train, x_test = preprocess(x_train, y_train, x_test)
     reg = SVR(kernel='rbf', C=10.0)
     reg.fit(x_train, y_train)
     y_test = reg.predict(x_test)
@@ -51,16 +70,16 @@ if args.test:
         y_test.reshape(-1, 1)), axis=1)
     np.savetxt(fname='y_test.csv', header='id,y', delimiter=',', X=y_test,
             fmt=['%d', '%.5f'], comments='')
+elif args.finetune:
+    scores = []
+    for C in [0.5, 1.0, 2.0, 4.0, 10.0]:
+        for k in [60, 80, 100, 120, 140]:
+            for knn in [10, 20, 30, 40, 50]:
+                model = SVR(kernel='rbf', C=C)
+                scores.append([C, k, knn, CV_score(x_train, y_train, model, k, knn)])
+    np.savetxt(fname='finetuning.csv', header='C,k,knn', delimiter=',',
+            X=scores, fmt=['%.1f', '%d', '%d', '%.5f'], comments='')
 else:
-    kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
-    total_score = 0
-    for train_idx, test_idx in kf.split(x_train):
-        #reg = LinearRegression()
-        #reg = Ridge(alpha=100)
-        #reg = DecisionTreeRegressor()
-        reg = SVR(kernel='rbf', C=10.0)
-        reg.fit(x_train[train_idx], y_train[train_idx])
-        y_pred = reg.predict(x_train[test_idx])
-        total_score += r2_score(y_train[test_idx], y_pred)
-
-    print('average score:', total_score/n_splits)
+    model = SVR(kernel='rbf', C=10.0)
+    avg_score = CV_score(x_train, y_train, model, args.k, args.knn)
+    print('average score:', avg_score)
