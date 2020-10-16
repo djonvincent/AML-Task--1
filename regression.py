@@ -5,11 +5,12 @@ from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR
 from sklearn.model_selection import KFold
-from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_regression
 from sklearn.metrics import mean_absolute_error, r2_score
 from load_data import dataframes
 from imputation import impute
 from outlier_detection import isolation_forest, local_outlier
+from feature_selection import kBest
 
 n_splits=3
 
@@ -41,9 +42,8 @@ def preprocess(x_raw, y_raw, x_test_raw, k_features, lo_neighbors):
     x_test = scaler.transform(x_test)
 
     #FEATURE SELECTION
-    k_best = SelectKBest(f_classif, k=k_features).fit(x, y)
-    x = k_best.transform(x)
-    x_test = k_best.transform(x_test)
+#    x, x_test = kBest(x, y, x_test, f_classif, k_features)
+    x, x_test = kBest(x, y, x_test, mutual_info_regression, k_features)
 
     return x, y, x_test
 
@@ -73,7 +73,7 @@ if args.test:
 elif args.finetune:
     scores = []
     for C in [8.0, 10.0, 15.0]:
-        for k in [50, 75, 100, 150]:
+        for k in [50, 75]:
             for knn in [10, 20, 30, 40, 50]:
                 print(f'C={C}, k={k}, knn={knn}')
                 model = SVR(kernel='rbf', C=C)
