@@ -47,12 +47,12 @@ def preprocess(x_raw, y_raw, x_test_raw, k_features, lo_neighbors):
 
     return x, y, x_test
 
-def CV_score(x, y, model, lo_neighbors, k_features, n_splits=3):
+def CV_score(x, y, model, k_features, lo_neighbors, n_splits=3):
     kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
     total_score = 0
     for train_idx, test_idx in kf.split(x):
         x_train_kf, y_train_kf, x_test_kf = preprocess(
-            x[train_idx], y[train_idx], x[test_idx], lo_neighbors, k_features
+            x[train_idx], y[train_idx], x[test_idx], k_features, lo_neighbors
         )
         model.fit(x_train_kf, y_train_kf)
         y_pred = model.predict(x_test_kf)
@@ -72,11 +72,14 @@ if args.test:
             fmt=['%d', '%.5f'], comments='')
 elif args.finetune:
     scores = []
-    for C in [0.5, 1.0, 2.0, 4.0, 10.0]:
-        for k in [60, 80, 100, 120, 140]:
+    for C in [8.0, 10.0, 15.0]:
+        for k in [50, 75, 100, 150]:
             for knn in [10, 20, 30, 40, 50]:
+                print(f'C={C}, k={k}, knn={knn}')
                 model = SVR(kernel='rbf', C=C)
-                scores.append([C, k, knn, CV_score(x_train, y_train, model, k, knn)])
+                score = CV_score(x_train, y_train, model, k, knn)
+                print(score)
+                scores.append([C, k, knn, score])
     np.savetxt(fname='finetuning.csv', header='C,k,knn', delimiter=',',
             X=scores, fmt=['%.1f', '%d', '%d', '%.5f'], comments='')
 else:
