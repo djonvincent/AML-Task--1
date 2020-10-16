@@ -26,7 +26,7 @@ def local_outlier(df, *args, **kwargs):
     rng = np.random.RandomState(42)
     neighbors=30
     if "neighbors" in kwargs:
-        sensitivity = kwargs["neighbors"]
+        neighbors = kwargs["neighbors"]
     clf = LocalOutlierFactor(n_neighbors=neighbors)
     df_outliers = clf.fit_predict(df)
     print("Inliers: ", (df_outliers == 1).sum())
