@@ -4,11 +4,11 @@ import pandas as pd
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, KNNImputer, IterativeImputer
 
-def impute(df, strategy):
+def impute(df, strategy, neighbors=5):
     if strategy == 'simple':
     	imputer = SimpleImputer(strategy='mean')
     elif strategy == 'knn':
-        imputer = KNNImputer()
+        imputer = KNNImputer(n_neighbors=neighbors)
     elif strategy == 'iterative':
     	imputer = IterativeImputer(n_nearest_features=100, verbose=5, tol=1e-5)
     else:
